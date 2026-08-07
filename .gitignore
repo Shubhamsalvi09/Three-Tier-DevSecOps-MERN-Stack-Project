@@ -1,3 +1,4 @@
+
 # Node modules
 backend/node_modules/
 frontend/node_modules/
@@ -11,6 +12,7 @@ frontend/build/
 
 # Logs
 *.log
+npm-debug.log*
 
 # OS files
 .DS_Store
@@ -20,8 +22,11 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Docker
-**/.dockerignore
-
-# npm
-npm-debug.log*
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.auto.tfvars
+*.tfplan
+crash.log
