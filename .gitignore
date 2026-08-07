@@ -1,0 +1,27 @@
+# Node modules
+backend/node_modules/
+frontend/node_modules/
+
+# React build
+frontend/build/
+
+# Environment files
+.env
+*.env
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+**/.dockerignore
+
+# npm
+npm-debug.log*
