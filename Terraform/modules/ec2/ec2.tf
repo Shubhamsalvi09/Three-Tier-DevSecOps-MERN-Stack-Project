@@ -4,8 +4,8 @@ resource "aws_key_pair" "mykey" {
 }
 
 resource "aws_instance" "myec2" {
-        ami = "ami-01a00762f46d584a1"
-        instance_type = "t3.micro"
+        ami = "ami-006f82a1d5a27da54"
+        instance_type = "m7i-flex.large"
 	key_name = aws_key_pair.mykey.key_name
         tags = {
                 Name = "Jenkins-Master"
