@@ -21,3 +21,6 @@ spec:
 
           ports:
             - containerPort: 3500
+          env:
+            - name: MONGO_CONN_STR
+              value: "mongodb://mongodb:27017/todos"
