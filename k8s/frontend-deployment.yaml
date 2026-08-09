@@ -16,4 +16,4 @@ spec:
         - name: frontend
           image: 371397508701.dkr.ecr.ap-south-1.amazonaws.com/mern-frontend:v49
           ports:
-            - containerPort: 3000
+            - containerPort: 80
