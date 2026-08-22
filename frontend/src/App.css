@@ -2,13 +2,12 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background: white
 }
 
 .app-header {
     background-color: #333333;
     color: white;
-    padding: 7px 8px;
+    padding: 6px 9px;
     text-align: center;
     font-size: 1.0rem;
     border-radius: 8px;
