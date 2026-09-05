@@ -51,7 +51,7 @@ pipeline {
             steps {
                 sh '''
                     docker build \
-                      --build-arg REACT_APP_BACKEND_URL=http://a587ad705809e40e8857c72755d63da4-2035980631.ap-south-1.elb.amazonaws.com:3500/api/tasks \
+                      --build-arg REACT_APP_BACKEND_URL=http://a0e47ce9eb2654ffabb400d0997925dc-2080268.ap-south-1.elb.amazonaws.com:3500/api/tasks \
                       -t ${FRONTEND_REPO}:v${BUILD_NUMBER} \
                       ./frontend
                 '''
