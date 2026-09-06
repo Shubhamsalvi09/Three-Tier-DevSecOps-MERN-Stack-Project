@@ -3,11 +3,10 @@
     flex-direction: column;
     height: 100vh;
 }
-
 .app-header {
-    background-color: yellow;
+    background-color: red;
     color: white;
-    padding: 6px 9px;
+    padding: 6px 9pxi;
     text-align: center;
     font-size: 1.0rem;
     border-radius: 8px;
