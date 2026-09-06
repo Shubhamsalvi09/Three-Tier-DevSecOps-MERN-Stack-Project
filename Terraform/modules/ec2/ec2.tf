@@ -1,5 +1,5 @@
 resource "aws_key_pair" "mykey" {
-        key_name = "Terraform-Key"
+        key_name = "id_ed25519"
         public_key = file("/home/shubhamsalvi/.ssh/id_ed25519.pub")
 }
 
@@ -8,7 +8,7 @@ resource "aws_instance" "myec2" {
         instance_type = "m7i-flex.large"
 	key_name = aws_key_pair.mykey.key_name
         tags = {
-                Name = "Jenkins-Master"
+                Name = "Master"
 }
 }
 
