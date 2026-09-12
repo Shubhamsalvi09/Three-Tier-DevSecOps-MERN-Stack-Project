@@ -24,6 +24,7 @@ WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package*.json ./
 COPY --from=builder /usr/src/app/index.js ./
+COPY --from=builder /usr/src/app/routes ./routes
 
 EXPOSE 3500
 
