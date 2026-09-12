@@ -18,6 +18,10 @@ RUN npm run build
 # ---------- Production Stage ----------
 FROM nginx:alpine
 
+RUN apk update && \
+    apk upgrade && \
+    rm -rf /var/cache/apk/*
+
 COPY --from=builder /app/build /usr/share/nginx/html
 
 EXPOSE 80

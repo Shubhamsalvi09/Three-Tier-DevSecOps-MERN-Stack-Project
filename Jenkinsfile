@@ -68,6 +68,33 @@ pipeline {
             }
         }
 
+
+	stage('Trivy Scan') {
+ 	   steps {
+        	sh '''
+            		echo "Scanning frontend image..."
+
+            		trivy image \
+              			--scanners vuln \
+              			--severity HIGH,CRITICAL \
+              			--ignore-unfixed \
+              			--exit-code 1 \
+              			${FRONTEND_REPO}:v${BUILD_NUMBER}
+
+            		echo "Scanning backend image..."
+
+            		trivy image \
+              			--scanners vuln \
+              			--severity HIGH,CRITICAL \
+              			--ignore-unfixed \
+              			--exit-code 1 \
+              			${BACKEND_REPO}:v${BUILD_NUMBER}
+
+            		echo "Trivy scan completed successfully!"
+        	'''
+    		}
+	}
+
         stage('Push Images to ECR') {
             steps {
                 sh '''
