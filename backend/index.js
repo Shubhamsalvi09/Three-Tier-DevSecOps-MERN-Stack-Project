@@ -4,6 +4,8 @@ const cors = require("cors");
 const express = require("express");
 const app = express();
 const mongoose = require('mongoose');
+// Security: prevent Express from exposing framework information
+app.disable("x-powered-by");
 
 connection();
 
