@@ -25,6 +25,7 @@ pipeline {
                     def previous = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT
 
                     if (!previous?.trim()) {
+                        echo 'Previous successful commit unavailable. Building both images.'
                         env.BUILD_FRONTEND = 'true'
                         env.BUILD_BACKEND = 'true'
                     } else {
@@ -33,7 +34,10 @@ pipeline {
                             returnStdout: true
                         ).trim()
 
-                        def changedFiles = changes ? changes.split('\n') : []
+                        def changedFiles = changes ?
+                            changes.split('\n') as List : []
+
+                        echo "Changed files:\n${changes}"
 
                         env.BUILD_FRONTEND = changedFiles.any {
                             it.startsWith('frontend/')
@@ -42,11 +46,6 @@ pipeline {
                         env.BUILD_BACKEND = changedFiles.any {
                             it.startsWith('backend/')
                         } ? 'true' : 'false'
-
-                        if (changedFiles.contains('Jenkinsfile')) {
-                            env.BUILD_FRONTEND = 'true'
-                            env.BUILD_BACKEND = 'true'
-                        }
                     }
 
                     echo "Frontend build required: ${env.BUILD_FRONTEND}"
@@ -57,14 +56,18 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        sonar-scanner \
-                          -Dsonar.projectKey=mern-stack \
-                          -Dsonar.projectName="MERN Stack DevSecOps" \
-                          -Dsonar.sources=frontend/src,backend \
-                          -Dsonar.exclusions=**/node_modules/**,**/build/**,**/coverage/**,**/*.test.js
-                    '''
+                script {
+                    def scannerHome = tool 'SonarQubeScanner'
+
+                    withSonarQubeEnv('SonarQube') {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                              -Dsonar.projectKey=mern-stack \
+                              -Dsonar.projectName="MERN Stack DevSecOps" \
+                              -Dsonar.sources=frontend/src,backend \
+                              -Dsonar.exclusions=**/node_modules/**,**/build/**,**/coverage/**,**/*.test.js
+                        """
+                    }
                 }
             }
         }
@@ -80,13 +83,15 @@ pipeline {
         stage('Login to ECR') {
             when {
                 expression {
-                    env.BUILD_FRONTEND == 'true' || env.BUILD_BACKEND == 'true'
+                    env.BUILD_FRONTEND == 'true' ||
+                    env.BUILD_BACKEND == 'true'
                 }
             }
             steps {
                 sh '''
                     aws ecr get-login-password --region ${AWS_REGION} |
-                    docker login --username AWS --password-stdin ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                    docker login --username AWS --password-stdin \
+                    ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
                 '''
             }
         }
@@ -121,14 +126,16 @@ pipeline {
         stage('Trivy Scan') {
             when {
                 expression {
-                    env.BUILD_FRONTEND == 'true' || env.BUILD_BACKEND == 'true'
+                    env.BUILD_FRONTEND == 'true' ||
+                    env.BUILD_BACKEND == 'true'
                 }
             }
             steps {
                 script {
                     if (env.BUILD_FRONTEND == 'true') {
                         sh '''
-                            trivy image --scanners vuln --severity HIGH,CRITICAL \
+                            trivy image --scanners vuln \
+                              --severity HIGH,CRITICAL \
                               --ignore-unfixed --exit-code 1 \
                               ${FRONTEND_REPO}:v${BUILD_NUMBER}
                         '''
@@ -136,7 +143,8 @@ pipeline {
 
                     if (env.BUILD_BACKEND == 'true') {
                         sh '''
-                            trivy image --scanners vuln --severity HIGH,CRITICAL \
+                            trivy image --scanners vuln \
+                              --severity HIGH,CRITICAL \
                               --ignore-unfixed --exit-code 1 \
                               ${BACKEND_REPO}:v${BUILD_NUMBER}
                         '''
@@ -148,7 +156,8 @@ pipeline {
         stage('Push Images to ECR') {
             when {
                 expression {
-                    env.BUILD_FRONTEND == 'true' || env.BUILD_BACKEND == 'true'
+                    env.BUILD_FRONTEND == 'true' ||
+                    env.BUILD_BACKEND == 'true'
                 }
             }
             steps {
@@ -167,7 +176,8 @@ pipeline {
         stage('Clone GitOps Repository') {
             when {
                 expression {
-                    env.BUILD_FRONTEND == 'true' || env.BUILD_BACKEND == 'true'
+                    env.BUILD_FRONTEND == 'true' ||
+                    env.BUILD_BACKEND == 'true'
                 }
             }
             steps {
@@ -182,7 +192,8 @@ pipeline {
         stage('Update GitOps Manifests') {
             when {
                 expression {
-                    env.BUILD_FRONTEND == 'true' || env.BUILD_BACKEND == 'true'
+                    env.BUILD_FRONTEND == 'true' ||
+                    env.BUILD_BACKEND == 'true'
                 }
             }
             steps {
@@ -207,12 +218,18 @@ pipeline {
         stage('Commit and Push GitOps Changes') {
             when {
                 expression {
-                    env.BUILD_FRONTEND == 'true' || env.BUILD_BACKEND == 'true'
+                    env.BUILD_FRONTEND == 'true' ||
+                    env.BUILD_BACKEND == 'true'
                 }
             }
             steps {
                 dir('gitops') {
-                    withCredentials([string(credentialsId: 'GitHub-Token', variable: 'GITHUB_TOKEN')]) {
+                    withCredentials([
+                        string(
+                            credentialsId: 'GitHub-Token',
+                            variable: 'GITHUB_TOKEN'
+                        )
+                    ]) {
                         sh '''
                             git config user.email "jenkins@example.com"
                             git config user.name "Jenkins"
@@ -227,7 +244,10 @@ pipeline {
 
                             if ! git diff --cached --quiet; then
                                 git commit -m "Update application image to build ${BUILD_NUMBER}"
-                                git push https://${GITHUB_TOKEN}@github.com/Shubhamsalvi09/Three-Tier-DevSecOps-MERN-Stack-GitOps.git HEAD:main
+
+                                git push \
+                                  https://${GITHUB_TOKEN}@github.com/Shubhamsalvi09/Three-Tier-DevSecOps-MERN-Stack-GitOps.git \
+                                  HEAD:main
                             else
                                 echo "No GitOps manifest changes to commit."
                             fi
@@ -238,4 +258,3 @@ pipeline {
         }
     }
 }
-
