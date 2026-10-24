@@ -5,9 +5,6 @@ pipeline {
         AWS_REGION    = 'ap-south-1'
         FRONTEND_REPO = '371397508701.dkr.ecr.ap-south-1.amazonaws.com/mern-frontend'
         BACKEND_REPO  = '371397508701.dkr.ecr.ap-south-1.amazonaws.com/mern-backend'
-    
-	BACKEND_URL   = 'REPLACE_AFTER_BACKEND_LB_CREATED'
-
 
 	}
 
@@ -63,7 +60,7 @@ pipeline {
             steps {
                 sh '''
                     docker build \
-                      --build-arg REACT_APP_BACKEND_URL=${BACKEND_URL}  \
+                      --build-arg REACT_APP_BACKEND_URL=/api/tasks  \
                       -t ${FRONTEND_REPO}:v${BUILD_NUMBER} \
                       ./frontend
                 '''
