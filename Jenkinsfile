@@ -215,46 +215,48 @@ pipeline {
             }
         }
 
-        stage('Commit and Push GitOps Changes') {
-            when {
-                expression {
-                    env.BUILD_FRONTEND == 'true' ||
-                    env.BUILD_BACKEND == 'true'
-                }
-            }
-            steps {
-                dir('gitops') {
-                    withCredentials([
-                        string(
-                            credentialsId: 'GitHub-Token',
-                            variable: 'GITHUB_TOKEN'
-                        )
-                    ]) {
-                        sh '''
-                            git config user.email "jenkins@example.com"
-                            git config user.name "Jenkins"
+	stage('Commit and Push GitOps Changes') {
+	    when {
+	        expression {
+	            env.BUILD_FRONTEND == 'true' ||
+	            env.BUILD_BACKEND == 'true'
+	        }
+	    }
+	    steps {
+	        dir('gitops') {
+	            withCredentials([
+	                usernamePassword(
+	                    credentialsId: 'GitHub-Token',
+        	            usernameVariable: 'GIT_USERNAME',
+                	    passwordVariable: 'GIT_PASSWORD'
+	                )
+	            ]) {
+	                sh '''
+	                    git config user.email "jenkins@example.com"
+	                    git config user.name "Jenkins"
 
-                            if [ "${BUILD_FRONTEND}" = "true" ]; then
-                                git add frontend-deployment.yaml
-                            fi
+	                    if [ "${BUILD_FRONTEND}" = "true" ]; then
+        	                git add frontend-deployment.yaml
+	                    fi
 
-                            if [ "${BUILD_BACKEND}" = "true" ]; then
-                                git add backend-deployment.yaml
-                            fi
+	      	            if [ "${BUILD_BACKEND}" = "true" ]; then
+                	        git add backend-deployment.yaml
+        	            fi
+	
+	                    if ! git diff --cached --quiet; then
+	                        git commit -m "Update application image to build ${BUILD_NUMBER}"
 
-                            if ! git diff --cached --quiet; then
-                                git commit -m "Update application image to build ${BUILD_NUMBER}"
+	                        git push \
+	                          https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Shubhamsalvi09/Three-Tier-DevSecOps-MERN-Stack-GitOps.git \
+	                          HEAD:main
+	                    else
+	                        echo "No GitOps manifest changes to commit."
+	                    fi
+	                '''
+	            }
+	        }
+	    }
+	}
 
-                                git push \
-                                  https://${GITHUB_TOKEN}@github.com/Shubhamsalvi09/Three-Tier-DevSecOps-MERN-Stack-GitOps.git \
-                                  HEAD:main
-                            else
-                                echo "No GitOps manifest changes to commit."
-                            fi
-                        '''
-                    }
-                }
-            }
-        }
     }
 }
